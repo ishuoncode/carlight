@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "./components/navbar/navbar"
 import Footer from "./components/footer";
 import GoToTop from "./components/GotoTop";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,6 +20,7 @@ export default function RootLayout({ children }) {
         <Navbar/>
         {/* <Providers> */}
           {children}
+          <SpeedInsights />
           {/* </Providers> */}
           <GoToTop/>
           <Footer/>
