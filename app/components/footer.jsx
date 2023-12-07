@@ -7,8 +7,8 @@ import Link from "next/link";
 export default function footer() {
   return (
     <div className="pt-[80px] bg-[#222222] mt-20">
-      <div className="flex text-[#888F93] mx-[10%]  ">
-        <div className="w-[30%]">
+      <div className="flex md:flex-row flex-col text-[#888F93] mx-[10%]  ">
+        <div className="md:w-[30%] ">
           <p className="uppercase mb-[7%]">About</p>
           <p className="">
             CarLight is a Car Washing & polishing company is an eco-friendly
@@ -21,7 +21,7 @@ export default function footer() {
 
           <p>Phone: +958xxxxxxx</p>
         </div>
-        <div className="w-[50%]">
+        <div className="md:w-[50%]">
           <Image
             src="/images/logowhite3.png"
             width={1000}
@@ -31,7 +31,7 @@ export default function footer() {
             className=" h-[16rem] w-[23rem] mx-auto"
           />
         </div>
-        <div className="w-[20%] ">
+        <div className="md:w-[20%] md:mb-[0]  mb-[7%]">
             <p className="mb-[7%]">COMPANY</p>
             <p><Link href="/#about">About Us</Link></p>
             <p><Link href="/#gallery">Gallery</Link></p>
