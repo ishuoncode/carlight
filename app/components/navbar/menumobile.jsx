@@ -1,8 +1,9 @@
 "use client";
 import React, { useState } from "react";
-import { IoMenuSharp ,IoClose  } from "react-icons/io5";
+import { IoMenuSharp, IoClose } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function MenuMobile() {
   const [showMenu, setShowMenu] = useState(false);
@@ -33,15 +34,49 @@ export default function MenuMobile() {
                 alt="logo"
                 className="rounded-full h-[25%] w-[25%] object-cover "
               />
-            <IoClose className="absolute top-5 right-4 cursor-pointer h-6 w-6 " onClick={()=>setShowMenu(!showMenu)}   />
+              <IoClose
+                className="absolute top-5 right-4 cursor-pointer h-6 w-6 "
+                onClick={() => setShowMenu(!showMenu)}
+              />
             </div>
             <div className=" grid grid-rows-7 gap-3 mt-[20%] px-5 py-2">
-              <p className="">Profile</p><hr />
-              <p className="">Home</p> <hr />
-              <p className="">Booking</p> <hr />
-              <p className="">Service</p> <hr />
-              <p className="">Shop</p> <hr />
-              <p className="">Contact</p> <hr />
+              <p className="">
+                <Link href="#" onClick={() => setShowMenu(!showMenu)}>
+                  Profile
+                </Link>
+              </p>
+              <hr />
+              <p className="">
+                <Link href="/#home" onClick={() => setShowMenu(!showMenu)}>
+                  Home
+                </Link>
+              </p>{" "}
+              <hr />
+              <p className="">
+                <Link href="/#booking" onClick={() => setShowMenu(!showMenu)}>
+                  Booking
+                </Link>
+              </p>{" "}
+              <hr />
+              <p className="">
+                <Link href="/#services" onClick={() => setShowMenu(!showMenu)}>
+                  Service
+                </Link>
+              </p>{" "}
+              <hr />
+              <p className="">
+                <Link href="#" onClick={() => setShowMenu(!showMenu)}>
+                  Shop
+                </Link>
+              </p>{" "}
+              <hr />
+              <p className="">
+                <Link href="/#contact" onClick={() => setShowMenu(!showMenu)}>
+                  {" "}
+                  Contact
+                </Link>
+              </p>{" "}
+              <hr />
             </div>
           </motion.div>
         )}
