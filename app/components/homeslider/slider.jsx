@@ -20,7 +20,7 @@ export default function Slider() {
   };
 
   return (
-    <div>
+    <div id="home">
       <Swiper
         slidesPerView={1}
         centeredSlides={true}

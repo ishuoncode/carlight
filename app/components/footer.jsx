@@ -33,9 +33,10 @@ export default function footer() {
         </div>
         <div className="md:w-[20%] md:mb-[0]  mb-[7%]">
             <p className="mb-[7%]">COMPANY</p>
-            <p><Link href="/#about">About Us</Link></p>
+            <p><Link href="/#about"  >About Us</Link></p>
             <p><Link href="/#gallery">Gallery</Link></p>
             <p><Link href="/#services">Our Services</Link></p>
+            <p><Link href="/#booking">Bookings</Link></p>
             <p>Store</p>
             <p><Link href="/#contact">Contact</Link></p>
         

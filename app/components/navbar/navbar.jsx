@@ -25,7 +25,7 @@ export default function Navbar() {
             items={["Home", "Booking", "Service", "Shop", "Contact"]}
           />
         )} */}
-        <MenuItems items={["Home", "Booking", "Service", "Shop", "Contact"]}  />
+        <MenuItems items={["Home", "Booking", "Service", "Shop", "Contact"]  } link={["/#home" , "/#booking" , "/#services", "#","/#contact"]}  />
       </div>
       <div className="grid grid-cols-3 gap-5  mr-10 sm:mr-2  sm:gap-1 ">
         <SlSocialFacebook className=" w-10 h-5 cursor-pointer" />

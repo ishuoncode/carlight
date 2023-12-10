@@ -102,7 +102,7 @@ export default function WashPlan() {
 
 
   return (
-    <div className="pt-20 flex-col">
+    <div className="pt-20 flex-col" id="booking">
         <div className="flex-col text-center text-3xl font-semibold text-[#222222] w-[18rem] m-auto">
           WASH PACKAGES
           <hr className="mt-5" />
