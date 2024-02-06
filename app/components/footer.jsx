@@ -37,7 +37,7 @@ export default function footer() {
             <p><Link href="/#gallery">Gallery</Link></p>
             <p><Link href="/#services">Our Services</Link></p>
             <p><Link href="/#booking">Bookings</Link></p>
-            <p>Store</p>
+            <p><Link href="/Shop">Store</Link></p>
             <p><Link href="/#contact">Contact</Link></p>
         
         </div>

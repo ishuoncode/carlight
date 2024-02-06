@@ -1,12 +1,13 @@
-import React from "react";
-import Image from "next/image";
-import { SlSocialFacebook } from "react-icons/sl";
-import { IoMailOutline, IoCartOutline, IoMenuSharp } from "react-icons/io5";
-import MenuItems from "./menuItems";
-import Menumobile from "./menumobile";
+import React from 'react';
+import Image from 'next/image';
+import { SlSocialFacebook } from 'react-icons/sl';
+import { IoMailOutline, IoCartOutline, IoMenuSharp } from 'react-icons/io5';
+import MenuItems from './menuItems';
+import Menumobile from './menumobile';
+import Link from 'next/link';
+import CartCount from './cartCount';
 
 export default function Navbar() {
- 
   return (
     <div className="flex bg-[#f8f8f8] shadow items-center py-2">
       <div>
@@ -25,20 +26,27 @@ export default function Navbar() {
             items={["Home", "Booking", "Service", "Shop", "Contact"]}
           />
         )} */}
-        <MenuItems items={["Home", "Booking", "Service", "Shop", "Contact"]  } link={["/#home" , "/#booking" , "/#services", "/Shop","/#contact"]}  />
+        <MenuItems
+          items={['Home', 'Booking', 'Service', 'Shop', 'Contact']}
+          link={['/#home', '/#booking', '/#services', '/Shop', '/#contact']}
+        />
       </div>
       <div className="grid grid-cols-3 gap-5  mr-10 sm:mr-2  sm:gap-1 ">
         <SlSocialFacebook className=" w-10 h-5 cursor-pointer" />
         <IoMailOutline className=" w-10 h-5 cursor-pointer" />
-        <IoCartOutline className=" w-10 h-5 cursor-pointer" />
+        <Link href="/cart">
+          <button className='flex'>
+          <IoCartOutline className="w-10 h-5 cursor-pointer" />
+          <CartCount/>
+          </button>
+        </Link>
       </div>
       <div className="mr-5 cursor-pointer border-2 px-5 py-1 hover:bg-[#cccccc] duration-300">
         Login
       </div>
 
       <div className="mr-5 lg:hidden ">
-        <Menumobile/>
-       
+        <Menumobile />
       </div>
     </div>
   );

@@ -20,7 +20,7 @@ export default function contact() {
             className="w-full h-[20rem] sm:h-full inset-0 aspect-w-1 aspect-h-1"
             allowfullscreen=""
             loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
+            referrerPolicy="no-referrer-when-downgrade"
           ></iframe>
         </div>
         <div className=" text-center sm:w-[50%] ">

@@ -1,41 +1,49 @@
 import Image from 'next/image';
 import React from 'react';
-import Star from './Star';
+import ShopCard from './shopCard';
+
 
 export default function index() {
   const carproducts = [
     {
+      id:1,
       images: '/images/autocare/shop_06-550x550.jpg',
       heading: 'Tire with brake unit',
       description:
         'Sed ut perspiciatis unde omnis iste natus error sit voluptatem ...',
-      price: '5000X',
+      price: '5000',
+      title:"car1"
     },
     {
-      images: '/images/autocare/shop_06-550x550.jpg',
-      heading: 'Tire with brake unit',
+      id:2,
+      images: '/images/autocare/shop_09-550x550.jpg',
+      heading: 'Reusable Filter For Conditioner',
       description:
         'Sed ut perspiciatis unde omnis iste natus error sit voluptatem ...',
-      price: '5000X',
+      price: '5000',
+      title:"car2"
     },
     {
+      id:3,
       images: '/images/autocare/shop_06-550x550.jpg',
       heading: 'Tire with brake unit',
       description:
         'Sed ut perspiciatis unde omnis iste natus error sit voluptatem ...',
-      price: '5000X',
+      price: '5000',
+      title:"car3"
     },
     {
+      id:4,
       images: '/images/autocare/shop_06-550x550.jpg',
       heading: 'Tire with brake unit',
       description:
         'Sed ut perspiciatis unde omnis iste natus error sit voluptatem ...',
-      price: '5000X',
+      price: '5000',
+      title:"car4"
     },
   ];
 
-  const stars=3.5
-  const review =50
+ 
 
   return (
     <div>
@@ -110,29 +118,7 @@ export default function index() {
 
         <div className="grid mxs:grid-cols-2 md:grid-cols-3 gap-4 px-[2rem] bg-[#FFFFFF] py-[1rem]">
           {carproducts.map((item, i) => (
-            <div
-              className="text-center transition-transform transform hover:scale-105 shadow-lg px-[5px] pb-[1rem] bg-[#FFFFFF] rounded-lg "
-              key={i}
-            >
-              <Image
-                src={`${item.images}`}
-                height={500}
-                width={500}
-                alt="autocare"
-                loading="lazy"
-              />
-              <Star star={stars} reviews={review}/>
-              <p className="text-center font-bold text-xl mb-[5px]">
-                {item.heading}
-              </p>
-              <p className="font-normal text-lg pb-[1rem]">
-                {item.description}
-              </p>
-              <p className="font-semibold text-lg pb-[1rem]">₹ {item.price}</p>
-              <button className="uppercase border-2 rounded-3xl px-5 py-2 text-[#209FDC] border-[#209FDC] mt-5 hover:text-white hover:bg-[#209FDC] ">
-                Add to cart
-              </button>
-            </div>
+          <ShopCard item={item} key={i}/>
           ))}
         </div>
       </div>
