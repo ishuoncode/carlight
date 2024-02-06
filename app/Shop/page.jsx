@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import React from 'react';
-import ShopCard from '../Shop/ShopCard';
+import ShopCard from './shopCard';
 
 
 export default function index() {
