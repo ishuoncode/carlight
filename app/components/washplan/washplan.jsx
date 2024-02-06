@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function WashPlan() {
   const [active, setActive] = useState("1");
@@ -167,9 +168,11 @@ export default function WashPlan() {
                 <p key={j}>{service}</p>
               ))}
             </div>
+            <Link  href="/book">
             <button className="uppercase border-2 rounded-3xl px-5 py-2 text-[#209FDC] border-[#209FDC] mt-5 hover:text-white hover:bg-[#209FDC] ">
               Book now
             </button>
+            </Link>
           </div>
         ))}
       </div>

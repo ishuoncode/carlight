@@ -1,23 +1,18 @@
 'use client';
-import {useState} from 'react';
+
 import { useFormik } from 'formik';
-import DatePicker from 'react-datepicker';
+
 import 'react-datepicker/dist/react-datepicker.css';
+import Bookdate from './bookdate';
 
 const initialValues = {
   email: '',
   phone: '',
-  address: '',
-  pincode: '',
-  selectedDate: null,
+  name: '',
 };
 
 export default function Page() {
-  const [selectedDate, setSelectedDate] = useState(null)
-
-
-
-  const { handleBlur, handleSubmit, values, handleChange ,setFieldValue} = useFormik({
+  const { handleBlur, handleSubmit, values, handleChange } = useFormik({
     initialValues,
     onSubmit: async values => {
       console.log(values);
@@ -25,31 +20,50 @@ export default function Page() {
   });
 
   // Sample data for wash plans
-  const washPlans = [
-    { id: 1, name: 'Basic Wash', price: '10' },
-    { id: 2, name: 'Standard Wash', price: '20' },
-    { id: 3, name: 'Premium Wash', price: '30' },
-  ];
-
- 
+  const plan = {
+    id: 3,
+    name: 'Premium Wash',
+    price: '30',
+    date: '22',
+    time: 22,
+  };
 
   return (
-    <div className="flex justify-between">
-      {/* Left side - Card displaying wash plans */}
-      <div className="w-1/3 p-4">
-        <h2 className="text-xl font-bold mb-4">Wash Plans</h2>
-        {washPlans.map(plan => (
-          <div key={plan.id} className="bg-white p-4 mb-4 shadow-md">
-            <h3 className="text-lg font-semibold">{plan.name}</h3>
-            <p className="text-gray-600">Price: ${plan.price}</p>
-          </div>
-        ))}
+    <div className="flex flex-col md:flex-row md:justify-between">
+    {/* Left side - Card displaying wash plans */}
+    <div className="w-full md:w-1/3 p-4">
+      <h2 className="text-xl font-bold mb-4">Wash Plan</h2>
+      <div className="bg-white p-4 mb-4 shadow-md">
+        <h3 className="text-lg font-semibold">{plan.name}</h3>
+        <p className="text-gray-600">Price: ₹{plan.price}</p>
+        <p className="text-lg text-gray-600">Date: {plan.date}</p>
+        <p className="text-gray-600">Time: {plan.time}</p>
       </div>
+    </div>
 
       {/* Right side - Form */}
-      <div className="w-2/3 p-4">
+      <div className="w-full md:w-2/3 p-4">
         <h2 className="text-xl font-bold mb-4">Checkout Form</h2>
+        <Bookdate />
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-y-4">
+          <label className="w-full">
+            <p className="mb-1 text-sm leading-[1.375rem]">
+              Name <sup className="text-pink-200">*</sup>
+            </p>
+            <input
+              type="name"
+              id="name"
+              placeholder="Name"
+              autoComplete="on"
+              name="name"
+              value={values.name}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              required
+              className="w-full rounded-[0.5rem] p-[12px] bg-gray-200"
+            />
+          </label>
           <label className="w-full">
             <p className="mb-1 text-sm leading-[1.375rem]">
               Email Address <sup className="text-pink-200">*</sup>
@@ -84,52 +98,10 @@ export default function Page() {
               className="w-full rounded-[0.5rem] p-[12px] bg-gray-200"
             />
           </label>
-          <label className="w-full">
-            <p className="mb-1 text-sm leading-[1.375rem]">Select Date</p>
-            <DatePicker
-              selected={selectedDate}
-              onChange={date => {
-                setSelectedDate(date);
-                setFieldValue('selectedDate', date);
-              }}
-              className="w-full rounded-[0.5rem] p-[12px] bg-gray-200"
-            />
-          </label>
-          <label className="w-full">
-            <p className="mb-1 text-sm leading-[1.375rem]">
-              Address <sup className="text-pink-200">*</sup>
-            </p>
-            <textarea
-              id="address"
-              placeholder="Address"
-              name="address"
-              value={values.address}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              required
-              className="w-full rounded-[0.5rem] p-[12px] bg-gray-200"
-            ></textarea>
-          </label>
-          <label className="w-full">
-            <p className="mb-1 text-sm leading-[1.375rem]">
-              Pincode <sup className="text-pink-200">*</sup>
-            </p>
-            <input
-              type="text"
-              id="pincode"
-              placeholder="Pincode"
-              autoComplete="on"
-              name="pincode"
-              value={values.pincode}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              required
-              className="w-full rounded-[0.5rem] p-[12px] bg-gray-200"
-            />
-          </label>
+
           <button
             type="submit"
-            className="mt-6 rounded-[8px] bg-yellow-50 py-[9px] px-[12px] font-medium text-gray-900 duration-500 hover:scale-[1.1]"
+            className="mt-6 rounded bg-yellow-50 py-3 px-4 font-medium text-gray-900 duration-500 "
           >
             Proceed
           </button>

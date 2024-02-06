@@ -10,7 +10,7 @@ export default function index() {
       images: '/images/autocare/shop_06-550x550.jpg',
       heading: 'Tire with brake unit',
       description:
-        'Sed ut perspiciatis unde omnis iste natus error sit voluptatem ...',
+        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Animi, ullam eveniet! Dolorem, id expedita delectus iure assumenda ",
       price: '5000',
       title:"car1"
     },
@@ -19,7 +19,7 @@ export default function index() {
       images: '/images/autocare/shop_09-550x550.jpg',
       heading: 'Reusable Filter For Conditioner',
       description:
-        'Sed ut perspiciatis unde omnis iste natus error sit voluptatem ...',
+      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Animi, ullam eveniet! Dolorem, id expedita delectus iure assumenda ",
       price: '5000',
       title:"car2"
     },
@@ -28,7 +28,7 @@ export default function index() {
       images: '/images/autocare/shop_06-550x550.jpg',
       heading: 'Tire with brake unit',
       description:
-        'Sed ut perspiciatis unde omnis iste natus error sit voluptatem ...',
+      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Animi, ullam eveniet! Dolorem, id expedita delectus iure assumenda ",
       price: '5000',
       title:"car3"
     },
@@ -37,7 +37,7 @@ export default function index() {
       images: '/images/autocare/shop_06-550x550.jpg',
       heading: 'Tire with brake unit',
       description:
-        'Sed ut perspiciatis unde omnis iste natus error sit voluptatem ...',
+      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Animi, ullam eveniet! Dolorem, id expedita delectus iure assumenda",
       price: '5000',
       title:"car4"
     },
@@ -47,7 +47,7 @@ export default function index() {
 
   return (
     <div>
-      <div className=" px-[2rem]">
+      <div className="px-[0.5rem] md:px-[2rem]">
         <Image
           height={500}
           width={500}
@@ -57,14 +57,14 @@ export default function index() {
           className="w-full h-[350px] rounded-xl "
         />
 
-        <div className="bg-[#F2F2F2] h-[64px] mt-[50px] w-full rounded-[8px] bg-clip-borde flex justify-between px-[1rem] p-[20px] ">
-          <p className="text-sm ">Our Products</p>
-          <div className="flex ">
-            <p className="">Sort by:</p>
-            <form action="" className="pl-[10px] ">
+        <div className="bg-[#F2F2F2] h-[64px] mt-[50px] w-full rounded-[8px] bg-clip-borde flex justify-between px-[1rem] p-[20px] w-full">
+          <p className="text-sm  ml-[2px]">Our Products</p>
+          <div className="flex">
+            <p className=" text-sm md:text-base">Sort by:</p>
+            <form action="" className="md:pl-[10px] pl-[5px] w-[40%]">
               <select
                 name="sortingOptions"
-                className="rounded-xl px-[5px] py-[2px]"
+                className="rounded-xl px-[1px] md:px-[5px] py-[2px] "
               >
                 <option value="default">Default sorting</option>
                 <option value="popularity">Sort by popularity</option>
@@ -77,8 +77,8 @@ export default function index() {
           </div>
         </div>
       </div>
-      <div className="flex mt-[50px] px-[2rem] ">
-        <div className="w-[30%] px-[2rem] flex-col  bg-[#f2f2f2]">
+      <div className=" md:flex-row flex flex-col mt-[50px] px-[2rem] ">
+        <div className="w-full md:w-[50%] px-[2rem] flex-col  bg-[#f2f2f2]">
           <div className="flex">
             <input
               type="search"
@@ -116,7 +116,7 @@ export default function index() {
           </ul>
         </div>
 
-        <div className="grid mxs:grid-cols-2 md:grid-cols-3 gap-4 px-[2rem] bg-[#FFFFFF] py-[1rem]">
+        <div className="grid mxs:grid-cols-2 md:grid-cols-3 gap-4 px-[0.5rem] md:px-[2rem] bg-[#FFFFFF] py-[1rem]">
           {carproducts.map((item, i) => (
           <ShopCard item={item} key={i}/>
           ))}
