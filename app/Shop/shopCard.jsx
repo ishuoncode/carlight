@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux';
 import { addToCart } from '../redux/slices/cartSlice';
 import toast from 'react-hot-toast';
 
-export default function shopCard({ item }) {
+export default function ShopCard({ item }) {
     const dispatch = useDispatch()
 
   const stars = 3.5;
