@@ -18,7 +18,7 @@ export default function contact() {
             height="100%"
             title="map"
             className="w-full h-[20rem] sm:h-full inset-0 aspect-w-1 aspect-h-1"
-            allowfullscreen=""
+            allowFullScreen=""
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           ></iframe>
