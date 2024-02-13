@@ -56,7 +56,7 @@ export default function MenuMobile() {
                 </div>
                 <div className="grid grid-rows-7 gap-3 mt-[20%] px-5 py-2">
                   <p>
-                    <Link href="/profile" onClick={toggleMenu}>
+                    <Link href="/dashboard" onClick={toggleMenu}>
                       Profile
                     </Link>
                   </p>
