@@ -1503,7 +1503,7 @@ const Billing = () => {
               placeholder="e.g., UP32AB1234, MH01CD5678"
               className="w-full font-mono text-lg tracking-wider border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all uppercase"
             />
-            <small className="text-gray-500 mt-1 block">Enter the vehicle's registration/license plate number</small>
+            <small className="text-gray-500 mt-1 block">Enter the vehicle&apos;s registration/license plate number</small>
           </div>
 
           {/* Car Type Field */}
