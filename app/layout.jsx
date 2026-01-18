@@ -1,5 +1,8 @@
 import { Inter } from 'next/font/google';
 import './globals.css';
+import 'primereact/resources/themes/lara-light-blue/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
 import Providers from './providers';
 import Navbar from './components/navbar/navbar';
 import Footer from './components/footer';
