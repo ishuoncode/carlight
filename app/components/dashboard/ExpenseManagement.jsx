@@ -6,16 +6,20 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Dropdown } from 'primereact/dropdown';
+import { Calendar } from 'primereact/calendar';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 const ExpenseManagement = () => {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const toast = React.useRef(null);
   const [expenses, setExpenses] = useState([]);
   const [pieData, setPieData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [addDialogVisible, setAddDialogVisible] = useState(false);
+  const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
+  const [expenseToDelete, setExpenseToDelete] = useState(null);
   const [outlets, setOutlets] = useState([]);
   const [categories, setCategories] = useState([]);
   const [viewMode, setViewMode] = useState('monthly'); // monthly or yearly
@@ -29,7 +33,8 @@ const ExpenseManagement = () => {
     title: '',
     amount: '',
     category: '',
-    notes: ''
+    notes: '',
+    createdAt: new Date()
   });
 
   const COLORS = [
@@ -68,7 +73,7 @@ const ExpenseManagement = () => {
       }
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/meta/enums', {
+      const response = await fetch(`${API_BASE_URL}/api/meta/enums`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -98,7 +103,7 @@ const ExpenseManagement = () => {
       }
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/shop', {
+      const response = await fetch(`${API_BASE_URL}/api/shop`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -120,7 +125,7 @@ const ExpenseManagement = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/expenses', {
+      const response = await fetch(`${API_BASE_URL}/api/expenses`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -158,10 +163,10 @@ const ExpenseManagement = () => {
       let url = '';
 
       if (viewMode === 'monthly') {
-        url = `http://localhost:8080/api/expenses/pie/monthly?year=${selectedYear}&month=${selectedMonth}`;
+        url = `${API_BASE_URL}/api/expenses/pie/monthly?year=${selectedYear}&month=${selectedMonth}`;
         if (selectedOutlet) url += `&outletId=${selectedOutlet}`;
       } else {
-        url = `http://localhost:8080/api/expenses/pie/yearly?year=${selectedYear}`;
+        url = `${API_BASE_URL}/api/expenses/pie/yearly?year=${selectedYear}`;
         if (selectedOutlet) url += `&outletId=${selectedOutlet}`;
       }
 
@@ -216,15 +221,19 @@ const ExpenseManagement = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/expenses', {
+      const response = await fetch(`${API_BASE_URL}/api/expenses`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          ...formData,
-          amount: parseFloat(formData.amount)
+          outletId: formData.outletId,
+          title: formData.title,
+          amount: parseFloat(formData.amount),
+          category: formData.category,
+          notes: formData.notes,
+          createdAt: formData.createdAt.toISOString()
         })
       });
 
@@ -242,7 +251,8 @@ const ExpenseManagement = () => {
           title: '',
           amount: '',
           category: '',
-          notes: ''
+          notes: '',
+          createdAt: new Date()
         });
 
         fetchExpenses();
@@ -261,6 +271,57 @@ const ExpenseManagement = () => {
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to add expense',
+        life: 3000
+      });
+    }
+  };
+
+  // Open delete confirmation modal
+  const confirmDeleteExpense = (expense) => {
+    setExpenseToDelete(expense);
+    setDeleteDialogVisible(true);
+  };
+
+  // Delete expense
+  const handleDeleteExpense = async () => {
+    if (!expenseToDelete) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/expenses/${expenseToDelete.id}/permanent`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        toast.current?.show({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Expense deleted successfully',
+          life: 3000
+        });
+
+        setDeleteDialogVisible(false);
+        setExpenseToDelete(null);
+        fetchExpenses();
+        fetchPieData();
+      } else {
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to delete expense',
+          life: 3000
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to delete expense',
         life: 3000
       });
     }
@@ -486,6 +547,19 @@ const ExpenseManagement = () => {
             <Column field="amount" header="Amount" sortable body={(rowData) => formatCurrency(rowData.amount)} style={{ width: '10rem' }} />
             <Column field="createdAt" header="Date" sortable body={(rowData) => formatDate(rowData.createdAt)} style={{ width: '10rem' }} />
             <Column field="notes" header="Notes" style={{ width: '15rem' }} />
+            <Column
+              header="Actions"
+              body={(rowData) => (
+                <Button
+                  icon="pi pi-trash"
+                  onClick={() => confirmDeleteExpense(rowData)}
+                  className="p-button-danger p-button-sm"
+                  tooltip="Delete expense"
+                  tooltipOptions={{ position: 'top' }}
+                />
+              )}
+              style={{ width: '8rem' }}
+            />
           </DataTable>
         </div>
       </div>
@@ -581,6 +655,25 @@ const ExpenseManagement = () => {
             </div>
           </div>
 
+          {/* Date */}
+          <div className="relative">
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+              <i className="pi pi-calendar text-blue-600"></i>
+              Expense Date <span className="text-red-500">*</span>
+            </label>
+            <Calendar
+              value={formData.createdAt}
+              onChange={(e) => setFormData({ ...formData, createdAt: e.value })}
+              showTime
+              hourFormat="24"
+              showIcon
+              dateFormat="dd M yy"
+              placeholder="Select date and time"
+              className="w-full border border-gray-300"
+              maxDate={new Date()}
+            />
+          </div>
+
           {/* Notes */}
           <div className="relative">
             <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
@@ -610,6 +703,101 @@ const ExpenseManagement = () => {
               icon="pi pi-check"
               onClick={handleAddExpense}
               className="bg-blue-600 hover:bg-blue-700 border-0 text-white px-6 py-2"
+            />
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        visible={deleteDialogVisible}
+        onHide={() => {
+          setDeleteDialogVisible(false);
+          setExpenseToDelete(null);
+        }}
+        modal
+        header={
+          <div className="flex items-center gap-3 pb-3 border-b">
+            <div className="bg-red-100 p-3 rounded-full">
+              <i className="pi pi-exclamation-triangle text-2xl text-red-600"></i>
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold text-gray-800">Delete Expense</h3>
+              <p className="text-sm text-gray-500">This action cannot be undone</p>
+            </div>
+          </div>
+        }
+        style={{ width: '500px' }}
+        className="delete-expense-dialog"
+      >
+        <div className="pt-4">
+          {/* Warning Message */}
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+            <div className="flex items-start">
+              <i className="pi pi-info-circle text-red-600 text-xl mt-1 mr-3"></i>
+              <div>
+                <p className="text-sm font-semibold text-red-800 mb-1">
+                  Are you sure you want to delete this expense?
+                </p>
+                <p className="text-sm text-red-700">
+                  This will permanently remove the expense from your records. This action is irreversible.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Expense Details */}
+          {expenseToDelete && (
+            <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
+              <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <i className="pi pi-file text-blue-600"></i>
+                Expense Details
+              </h4>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Title:</span>
+                  <span className="text-sm font-semibold text-gray-800">{expenseToDelete.title}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Amount:</span>
+                  <span className="text-sm font-bold text-red-600">{formatCurrency(expenseToDelete.amount)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Category:</span>
+                  <span className="text-sm font-semibold text-gray-800">{expenseToDelete.category}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Outlet:</span>
+                  <span className="text-sm font-semibold text-gray-800">{expenseToDelete.outlet?.name || 'N/A'}</span>
+                </div>
+                {expenseToDelete.notes && (
+                  <div className="pt-2 border-t border-gray-200">
+                    <span className="text-sm text-gray-600 block mb-1">Notes:</span>
+                    <span className="text-sm text-gray-800 italic">{expenseToDelete.notes}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              label="Cancel"
+              icon="pi pi-times"
+              onClick={() => {
+                setDeleteDialogVisible(false);
+                setExpenseToDelete(null);
+              }}
+              className="px-6 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50"
+              outlined
+            />
+            <Button
+              label="Delete Expense"
+              icon="pi pi-trash"
+              onClick={handleDeleteExpense}
+              className="bg-red-600 hover:bg-red-700 border-0 text-white px-6 py-2"
+              severity="danger"
             />
           </div>
         </div>

@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { Toast } from 'primereact/toast';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const Analytics = () => {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const toast = React.useRef(null);
   const [outlets, setOutlets] = useState([]);
   const [viewMode, setViewMode] = useState('monthly'); // monthly or yearly
@@ -18,6 +19,7 @@ const Analytics = () => {
   const [totalExpense, setTotalExpense] = useState(0);
   const [carsServiced, setCarsServiced] = useState(0);
   const [carsServicedChartData, setCarsServicedChartData] = useState([]);
+  const [allYearsData, setAllYearsData] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Fetch outlets
@@ -31,7 +33,7 @@ const Analytics = () => {
       }
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/shop', {
+      const response = await fetch(`${API_BASE_URL}/api/shop`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -52,7 +54,7 @@ const Analytics = () => {
   const fetchTotalBill = async () => {
     try {
       const token = localStorage.getItem('token');
-      let url = `http://localhost:8080/api/bills/yearly?year=${selectedYear}`;
+      let url = `${API_BASE_URL}/api/bills/yearly?year=${selectedYear}`;
       if (selectedOutlet) url += `&outletId=${selectedOutlet}`;
 
       const response = await fetch(url, {
@@ -83,7 +85,7 @@ const Analytics = () => {
   const fetchTotalExpense = async () => {
     try {
       const token = localStorage.getItem('token');
-      let url = `http://localhost:8080/api/expenses/pie/yearly?year=${selectedYear}`;
+      let url = `${API_BASE_URL}/api/expenses/pie/yearly?year=${selectedYear}`;
       if (selectedOutlet) url += `&outletId=${selectedOutlet}`;
 
       const response = await fetch(url, {
@@ -114,7 +116,7 @@ const Analytics = () => {
   const fetchCarsServiced = async () => {
     try {
       const token = localStorage.getItem('token');
-      let url = `http://localhost:8080/api/bills/yearly?year=${selectedYear}`;
+      let url = `${API_BASE_URL}/api/bills/yearly?year=${selectedYear}`;
       if (selectedOutlet) url += `&outletId=${selectedOutlet}`;
 
       const response = await fetch(url, {
@@ -166,13 +168,37 @@ const Analytics = () => {
     }
   };
 
+  // Fetch all years cars serviced data
+  const fetchAllYearsCarsServiced = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      let url = `${API_BASE_URL}/api/reports/cars-serviced/all-years`;
+      if (selectedOutlet) url += `?outletId=${selectedOutlet}`;
+
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAllYearsData(data);
+      }
+    } catch (error) {
+      console.error('Error fetching all years data:', error);
+    }
+  };
+
   // Fetch all data
   const fetchAllData = async () => {
     setLoading(true);
     await Promise.all([
       fetchTotalBill(),
       fetchTotalExpense(),
-      fetchCarsServiced()
+      fetchCarsServiced(),
+      fetchAllYearsCarsServiced()
     ]);
     setLoading(false);
   };
@@ -195,9 +221,10 @@ const Analytics = () => {
   const totalProfit = totalBill - totalExpense;
 
   const currentYear = new Date().getFullYear();
+  const minYear = 2025;
 
-  const years = Array.from({ length: 10 }, (_, i) => {
-    const year = currentYear - 9 + i;
+  const years = Array.from({ length: currentYear - minYear + 1 }, (_, i) => {
+    const year = currentYear - i;
     return { label: year.toString(), value: year };
   });
 
@@ -311,26 +338,76 @@ const Analytics = () => {
         </div>
 
         {/* Cars Serviced Bar Chart */}
-        <div className="bg-gray-50 rounded-lg p-6">
-          <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
-            <i className="pi pi-chart-bar text-purple-600"></i>
+        <div className="bg-gray-800 rounded-lg p-6 mb-6">
+          <h3 className="text-xl font-semibold mb-4 text-gray-100 flex items-center gap-2">
+            <i className="pi pi-chart-bar text-purple-400"></i>
             Cars Serviced This Year
           </h3>
           {carsServicedChartData.length > 0 ? (
             <div style={{ width: '100%', height: '400px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={carsServicedChartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="totalcar" fill="#8b5cf6" name="Cars Serviced" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="month" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#1f2937', 
+                      border: '1px solid #374151',
+                      borderRadius: '8px',
+                      color: '#f3f4f6'
+                    }}
+                    labelStyle={{ color: '#f3f4f6' }}
+                  />
+                  <Legend wrapperStyle={{ color: '#9ca3af' }} />
+                  <Bar dataKey="totalcar" fill="#a78bfa" name="Cars Serviced" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           ) : (
-            <div style={{ height: '400px' }} className="flex items-center justify-center text-gray-500">
+            <div style={{ height: '400px' }} className="flex items-center justify-center text-gray-400">
+              No data available
+            </div>
+          )}
+        </div>
+
+        {/* All Years Cars Serviced Line Chart */}
+        <div className="bg-gray-800 rounded-lg p-6">
+          <h3 className="text-xl font-semibold mb-4 text-gray-100 flex items-center gap-2">
+            <i className="pi pi-chart-line text-blue-400"></i>
+            Cars Serviced Across All Years
+          </h3>
+          {allYearsData.length > 0 ? (
+            <div style={{ width: '100%', height: '400px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={allYearsData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="year" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#1f2937', 
+                      border: '1px solid #374151',
+                      borderRadius: '8px',
+                      color: '#f3f4f6'
+                    }}
+                    labelStyle={{ color: '#f3f4f6' }}
+                  />
+                  <Legend wrapperStyle={{ color: '#9ca3af' }} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="totalCars" 
+                    stroke="#60a5fa" 
+                    strokeWidth={3}
+                    name="Total Cars Serviced" 
+                    dot={{ fill: '#60a5fa', r: 6 }}
+                    activeDot={{ r: 8 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div style={{ height: '400px' }} className="flex items-center justify-center text-gray-400">
               No data available
             </div>
           )}

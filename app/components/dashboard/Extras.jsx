@@ -13,6 +13,7 @@ import { FilterMatchMode } from 'primereact/api';
 import toast from 'react-hot-toast';
 
 export default function Extras() {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const [extras, setExtras] = useState([]);
   const [filteredExtras, setFilteredExtras] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -59,7 +60,7 @@ export default function Extras() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/extras', {
+      const response = await fetch(`${API_BASE_URL}/api/extras`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -120,7 +121,7 @@ export default function Extras() {
     setAddSubmitting(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/extras', {
+      const response = await fetch(`${API_BASE_URL}/api/extras`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -162,7 +163,7 @@ export default function Extras() {
     setEditSubmitting(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/extras/${selectedExtra.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/extras/${selectedExtra.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -11,6 +11,7 @@ import { Accordion, AccordionTab } from 'primereact/accordion';
 import { useAuth } from '@/app/context/AuthContext';
 
 const Billing = () => {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const toast = React.useRef(null);
   const { user } = useAuth();
   
@@ -115,9 +116,8 @@ const Billing = () => {
     try {
       const token = localStorage.getItem('token');
       const url = outletId 
-        ? `http://localhost:8080/api/admin/outlets/${outletId}/outlet-packages`
-        : 'http://localhost:8080/api/admin/wash-packages';
-      
+        ? `${API_BASE_URL}/api/admin/outlets/${outletId}/outlet-packages`
+        : `${API_BASE_URL}/api/admin/wash-packages`;
       console.log('Fetching packages from:', url, 'for car type:', carTypeFilter);
       
       const response = await fetch(url, {
@@ -176,7 +176,7 @@ const Billing = () => {
   const fetchExtras = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/extras', {
+      const response = await fetch(`${API_BASE_URL}/api/extras`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -236,7 +236,7 @@ const Billing = () => {
 
       // If not in cache, fetch from API
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/outlets', {
+      const response = await fetch(`${API_BASE_URL}/api/outlets`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -286,7 +286,7 @@ const Billing = () => {
 
       // If not in cache, fetch from API
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/meta/enums', {
+      const response = await fetch(`${API_BASE_URL}/api/meta/enums`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -338,7 +338,7 @@ const Billing = () => {
     setSearching(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/cars/search?carNo=${searchCarNumber.toUpperCase()}`, {
+      const response = await fetch(`${API_BASE_URL}/api/cars/search?carNo=${searchCarNumber.toUpperCase()}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -442,7 +442,7 @@ const Billing = () => {
     setCreatingCustomer(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/customers', {
+      const response = await fetch(`${API_BASE_URL}/api/customers`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -506,7 +506,7 @@ const Billing = () => {
           // Search for existing customer by phone number
           try {
             const searchToken = localStorage.getItem('token');
-            const searchResponse = await fetch(`http://localhost:8080/api/customers/search/phone?phoneNumber=${newCustomerForm.phoneNumber}`, {
+            const searchResponse = await fetch(`${API_BASE_URL}/api/customers/search/phone?phoneNumber=${newCustomerForm.phoneNumber}`, {
               headers: {
                 'Authorization': `Bearer ${searchToken}`,
                 'Content-Type': 'application/json'
@@ -577,7 +577,7 @@ const Billing = () => {
     try {
       const token = localStorage.getItem('token');
       // Search by phone number
-      const response = await fetch(`http://localhost:8080/api/customers/search/phone?phoneNumber=${encodeURIComponent(query)}`, {
+      const response = await fetch(`${API_BASE_URL}/api/customers/search/phone?phoneNumber=${encodeURIComponent(query)}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -647,7 +647,7 @@ const Billing = () => {
       
       console.log('Creating car with payload:', carPayload);
       
-      const response = await fetch('http://localhost:8080/api/cars', {
+      const response = await fetch(`${API_BASE_URL}/api/cars`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -825,7 +825,7 @@ const Billing = () => {
       
       console.log('Submitting bill:', billData);
       
-      const response = await fetch('http://localhost:8080/api/bills', {
+      const response = await fetch(`${API_BASE_URL}/api/bills`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

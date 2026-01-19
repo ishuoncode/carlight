@@ -11,6 +11,7 @@ import { Tag } from 'primereact/tag';
 import toast from 'react-hot-toast';
 
 export default function OutletPricing({ onBack }) {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const [outletPackages, setOutletPackages] = useState([]);
   const [filteredPackages, setFilteredPackages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -70,7 +71,7 @@ export default function OutletPricing({ onBack }) {
 
       // Fetch from API if not in localStorage
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/meta/enums`, {
+      const response = await fetch(`${API_BASE_URL}/api/meta/enums`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -96,7 +97,7 @@ export default function OutletPricing({ onBack }) {
   const fetchOutlets = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/outlets`, {
+      const response = await fetch(`${API_BASE_URL}/api/outlets`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -118,7 +119,7 @@ export default function OutletPricing({ onBack }) {
   const fetchWashPackages = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/admin/wash-packages`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/wash-packages`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -141,7 +142,7 @@ export default function OutletPricing({ onBack }) {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/admin/outlet-packages`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/outlet-packages`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -227,7 +228,7 @@ export default function OutletPricing({ onBack }) {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(
-        `http://localhost:8080/api/admin/outlet-packages/outlets/${addForm.outletId}/wash-packages/${addForm.washPackageId}/pricing`,
+        `${API_BASE_URL}/api/admin/outlet-packages/outlets/${addForm.outletId}/wash-packages/${addForm.washPackageId}/pricing`,
         {
           method: 'POST',
           headers: {
@@ -276,7 +277,7 @@ export default function OutletPricing({ onBack }) {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(
-        `http://localhost:8080/api/admin/outlet-packages/${selectedPackage.id}/price`,
+        `${API_BASE_URL}/api/admin/outlet-packages/${selectedPackage.id}/price`,
         {
           method: 'PUT',
           headers: {
@@ -317,7 +318,7 @@ export default function OutletPricing({ onBack }) {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(
-        `http://localhost:8080/api/admin/outlet-packages/${packageToToggle.id}/status`,
+        `${API_BASE_URL}/api/admin/outlet-packages/${packageToToggle.id}/status`,
         {
           method: 'PATCH',
           headers: {

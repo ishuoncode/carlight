@@ -8,6 +8,7 @@ import { Dialog } from 'primereact/dialog';
 import * as XLSX from 'xlsx';
 
 const CarFrequency = () => {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const toast = React.useRef(null);
   const [carData, setCarData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -21,7 +22,7 @@ const CarFrequency = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/bills', {
+      const response = await fetch(`${API_BASE_URL}/api/bills`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

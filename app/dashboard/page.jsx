@@ -18,6 +18,7 @@ import CarFrequency from '../components/dashboard/CarFrequency';
 import ExpenseManagement from '../components/dashboard/ExpenseManagement';
 import Analytics from '../components/dashboard/Analytics';
 import YourBilling from '../components/dashboard/YourBilling';
+import CarOwner from '../components/dashboard/CarOwner';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -204,6 +205,13 @@ export default function Dashboard() {
       visible: user?.role !== 'CASHIER'
     },
     {
+      label: 'Car & Owner',
+      icon: 'pi pi-id-card',
+      command: () => setActiveTab('carowner'),
+      className: activeTab === 'carowner' ? 'bg-blue-100 border-l-4 border-blue-600' : '',
+      visible: user?.role !== 'CASHIER'
+    },
+    {
       label: 'Expense Management',
       icon: 'pi pi-money-bill',
       command: () => setActiveTab('expenses'),
@@ -286,6 +294,8 @@ export default function Dashboard() {
         return <Customer />;
       case 'carfrequency':
         return <CarFrequency />;
+      case 'carowner':
+        return <CarOwner />;
       case 'expenses':
         return <ExpenseManagement />;
       case 'yourBilling':

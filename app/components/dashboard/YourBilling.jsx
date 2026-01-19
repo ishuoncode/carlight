@@ -12,6 +12,7 @@ import * as XLSX from 'xlsx';
 import toast from 'react-hot-toast';
 
 export default function YourBilling() {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const toastRef = React.useRef(null);
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -33,7 +34,7 @@ export default function YourBilling() {
         return;
       }
 
-      const response = await fetch(`http://localhost:8080/api/bills/staff/${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/bills/staff/${userId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

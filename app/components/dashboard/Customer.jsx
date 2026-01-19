@@ -10,11 +10,14 @@ import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 
 const Customer = () => {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const toast = React.useRef(null);
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedBill, setSelectedBill] = useState(null);
   const [viewDialogVisible, setViewDialogVisible] = useState(false);
+  const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
+  const [billToDelete, setBillToDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOutlet, setSelectedOutlet] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -24,7 +27,7 @@ const Customer = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/bills', {
+      const response = await fetch(`${API_BASE_URL}/api/bills`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -110,6 +113,66 @@ const Customer = () => {
           setViewDialogVisible(true);
         }}
         tooltip="View Details"
+      />
+    );
+  };
+
+  // Open delete confirmation modal
+  const confirmDeleteBill = (bill) => {
+    setBillToDelete(bill);
+    setDeleteDialogVisible(true);
+  };
+
+  // Delete bill
+  const handleDeleteBill = async () => {
+    if (!billToDelete) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/bills/${billToDelete.billId}/permanent`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        toast.current?.show({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Bill deleted successfully',
+          life: 3000
+        });
+        setDeleteDialogVisible(false);
+        setBillToDelete(null);
+        fetchBills();
+      } else {
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to delete bill',
+          life: 3000
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting bill:', error);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to delete bill',
+        life: 3000
+      });
+    }
+  };
+
+  const deleteTemplate = (rowData) => {
+    return (
+      <Button
+        icon="pi pi-trash"
+        className="p-button-rounded p-button-text p-button-danger"
+        onClick={() => confirmDeleteBill(rowData)}
+        tooltip="Delete Bill"
       />
     );
   };
@@ -537,9 +600,10 @@ const Customer = () => {
                 {printTemplate(rowData)}
                 {downloadTemplate(rowData)}
                 {viewMoreTemplate(rowData)}
+                {deleteTemplate(rowData)}
               </div>
             )} 
-            style={{ width: '10rem', textAlign: 'center' }} 
+            style={{ width: '12rem', textAlign: 'center' }} 
           />
         </DataTable>
         </div>
@@ -664,6 +728,107 @@ const Customer = () => {
             </div>
           </div>
         )}
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        visible={deleteDialogVisible}
+        onHide={() => {
+          setDeleteDialogVisible(false);
+          setBillToDelete(null);
+        }}
+        modal
+        header={
+          <div className="flex items-center gap-3 pb-3 border-b">
+            <div className="bg-red-100 p-3 rounded-full">
+              <i className="pi pi-exclamation-triangle text-2xl text-red-600"></i>
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold text-gray-800">Delete Bill</h3>
+              <p className="text-sm text-gray-500">This action cannot be undone</p>
+            </div>
+          </div>
+        }
+        style={{ width: '500px' }}
+        className="delete-bill-dialog"
+      >
+        <div className="pt-4">
+          {/* Warning Message */}
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+            <div className="flex items-start">
+              <i className="pi pi-info-circle text-red-600 text-xl mt-1 mr-3"></i>
+              <div>
+                <p className="text-sm font-semibold text-red-800 mb-1">
+                  Are you sure you want to delete this bill?
+                </p>
+                <p className="text-sm text-red-700">
+                  This will permanently remove the bill from your records. This action is irreversible.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bill Details */}
+          {billToDelete && (
+            <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
+              <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <i className="pi pi-file text-blue-600"></i>
+                Bill Details
+              </h4>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Invoice No:</span>
+                  <span className="text-sm font-semibold text-gray-800">{billToDelete.invoiceNo}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Customer:</span>
+                  <span className="text-sm font-semibold text-gray-800">{billToDelete.customerName}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Vehicle No:</span>
+                  <span className="text-sm font-semibold text-gray-800">{billToDelete.carNo}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Amount:</span>
+                  <span className="text-sm font-bold text-red-600">{formatCurrency(billToDelete.totalAmount)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Package:</span>
+                  <span className="text-sm font-semibold text-gray-800">{billToDelete.packageName}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Outlet:</span>
+                  <span className="text-sm font-semibold text-gray-800">{billToDelete.outletName}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Date:</span>
+                  <span className="text-sm font-semibold text-gray-800">{formatDateTime(billToDelete.createdAt)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              label="Cancel"
+              icon="pi pi-times"
+              onClick={() => {
+                setDeleteDialogVisible(false);
+                setBillToDelete(null);
+              }}
+              className="px-6 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50"
+              outlined
+            />
+            <Button
+              label="Delete Bill"
+              icon="pi pi-trash"
+              onClick={handleDeleteBill}
+              className="bg-red-600 hover:bg-red-700 border-0 text-white px-6 py-2"
+              severity="danger"
+            />
+          </div>
+        </div>
       </Dialog>
     </div>
   );
