@@ -50,6 +50,14 @@ const Billing = () => {
   const [carId, setCarId] = useState(null);
   const [customerId, setCustomerId] = useState(null);
   
+  // Coupon state
+  const [eligibleCoupons, setEligibleCoupons] = useState([]);
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponValidated, setCouponValidated] = useState(false);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
+  
   // Data state
   const [washPackages, setWashPackages] = useState([]);
   const [extras, setExtras] = useState([]);
@@ -109,8 +117,12 @@ const Billing = () => {
   }, [selectedOutlet, carType, user]);
   
   useEffect(() => {
+    fetchEligibleCoupons();
+  }, [selectedOutlet, carId]);
+  
+  useEffect(() => {
     calculateAmounts();
-  }, [selectedWashPackage, selectedExtras, discount, additionalCharges]);
+  }, [selectedWashPackage, selectedExtras, discount, additionalCharges, couponDiscount]);
   
   const fetchWashPackages = async (outletId = null, carTypeFilter = null) => {
     try {
@@ -210,6 +222,35 @@ const Billing = () => {
         detail: 'Failed to fetch extras',
         life: 3000
       });
+    }
+  };
+  
+  const fetchEligibleCoupons = async () => {
+    if (!selectedOutlet || !carId) {
+      setEligibleCoupons([]);
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/coupons/eligible?outletId=${selectedOutlet}&carId=${carId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const coupons = data.map(coupon => ({
+          label: `${coupon.code} - ${coupon.discountType === 'PERCENT' ? coupon.discountValue + '%' : '₹' + coupon.discountValue} OFF`,
+          value: coupon.code,
+          ...coupon
+        }));
+        setEligibleCoupons(coupons);
+      }
+    } catch (error) {
+      console.error('Error fetching eligible coupons:', error);
     }
   };
   
@@ -720,6 +761,108 @@ const Billing = () => {
     setAdditionalCharges(additionalCharges.filter((_, i) => i !== index));
   };
   
+  const validateCoupon = async () => {
+    if (!couponCode || !selectedOutlet || !carId) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'Validation Error',
+        detail: 'Please fill all required fields before applying coupon',
+        life: 3000
+      });
+      return;
+    }
+    
+    setValidatingCoupon(true);
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Get selected package details
+      const pkg = washPackages.find(p => p.value === selectedWashPackage);
+      const outletPackageId = pkg?.value;
+      
+      const requestBody = {
+        code: couponCode,
+        outletId: selectedOutlet,
+        carId: carId,
+        outletPackageId: outletPackageId,
+        extraIds: selectedExtras,
+        additionalCharges: additionalCharges.map(charge => ({
+          title: charge.title,
+          amount: charge.amount
+        })),
+        manualDiscount: discount || 0
+      };
+      
+      const response = await fetch(`${API_BASE_URL}/api/coupons/best`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.valid) {
+          setCouponDiscount(data.couponDiscount || 0);
+          setCouponValidated(true);
+          setSelectedCoupon(data);
+          toast.current?.show({
+            severity: 'success',
+            summary: 'Coupon Applied',
+            detail: data.message || `Coupon ${couponCode} applied successfully!`,
+            life: 3000
+          });
+        } else {
+          toast.current?.show({
+            severity: 'error',
+            summary: 'Invalid Coupon',
+            detail: data.message || 'Coupon is not valid',
+            life: 3000
+          });
+        }
+      } else {
+        const errorData = await response.json();
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Error',
+          detail: errorData.message || 'Failed to validate coupon',
+          life: 3000
+        });
+      }
+    } catch (error) {
+      console.error('Error validating coupon:', error);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to validate coupon',
+        life: 3000
+      });
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
+  
+  const removeCoupon = () => {
+    setCouponCode('');
+    setSelectedCoupon(null);
+    setCouponDiscount(0);
+    setCouponValidated(false);
+  };
+  
+  const handleCouponSelection = (couponValue) => {
+    // If a coupon is already validated, reset it first
+    if (couponValidated) {
+      setCouponValidated(false);
+      setSelectedCoupon(null);
+      setCouponDiscount(0);
+    }
+    
+    // Just set the coupon code in the input field
+    setCouponCode(couponValue);
+  };
+  
   const calculateAmounts = () => {
     let pkgAmt = 0;
     let extAmt = 0;
@@ -736,8 +879,11 @@ const Billing = () => {
       }, 0);
     }
     
-    const total = pkgAmt + extAmt;
-    const final = total - (discount || 0);
+    // Add additional charges
+    const additionalAmt = additionalCharges.reduce((sum, charge) => sum + (charge.amount || 0), 0);
+    
+    const total = pkgAmt + extAmt + additionalAmt;
+    const final = total - (discount || 0) - (couponDiscount || 0);
     
     setPackageAmount(pkgAmt);
     setExtrasAmount(extAmt);
@@ -820,7 +966,8 @@ const Billing = () => {
         totalAmmount: finalAmount,
         paymentMethod: paymentMethod,
         createdBy: user?.id,
-        additionalCharges: additionalCharges || []
+        additionalCharges: additionalCharges || [],
+        couponId: selectedCoupon?.couponId || null
       };
       
       console.log('Submitting bill:', billData);
@@ -891,6 +1038,10 @@ const Billing = () => {
     setNewCharge({ title: '', amount: 0 });
     setCarId(null);
     setCustomerId(null);
+    setCouponCode('');
+    setSelectedCoupon(null);
+    setCouponDiscount(0);
+    setCouponValidated(false);
   };
   
   const formatCurrency = (value=0) => {
@@ -1274,6 +1425,103 @@ const Billing = () => {
                     </div>
                   </div>
                   
+                  {/* Coupon Section */}
+                  <div className="col-span-1 sm:col-span-2 space-y-3">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-gray-700">
+                      <i className="pi pi-ticket text-purple-600"></i>
+                      Apply Coupon <span className="text-gray-400">(Optional)</span>
+                    </label>
+                    
+                    {/* Coupon Input Bar */}
+                    <div className="relative">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 relative">
+                          <InputText
+                            value={couponCode}
+                            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                            placeholder="Enter coupon code"
+                            className="w-full border-2 border-purple-300 focus:border-purple-500 rounded-lg px-4 py-3 pr-24 text-sm font-bold tracking-wider uppercase"
+                            disabled={couponValidated}
+                            style={{
+                              backgroundColor: couponValidated ? '#f0fdf4' : 'white',
+                              borderColor: couponValidated ? '#22c55e' : undefined
+                            }}
+                          />
+                          {couponValidated && (
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                              <span className="text-xs font-semibold text-green-700">
+                                -{formatCurrency(couponDiscount)}
+                              </span>
+                              <button
+                                onClick={removeCoupon}
+                                className="p-1 hover:bg-red-100 rounded-full transition-colors"
+                                title="Remove coupon"
+                              >
+                                <i className="pi pi-times text-red-600 text-sm"></i>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        {!couponValidated && (
+                          <Button
+                            label="Apply"
+                            icon="pi pi-check"
+                            onClick={validateCoupon}
+                            loading={validatingCoupon}
+                            disabled={!couponCode || validatingCoupon}
+                            className="bg-purple-600 hover:bg-purple-700 border-0 text-white px-6 py-3"
+                          />
+                        )}
+                      </div>
+                      
+                      {couponValidated && (
+                        <div className="flex items-center gap-2 mt-2 px-2">
+                          <i className="pi pi-check-circle text-green-600 text-sm"></i>
+                          <span className="text-xs font-semibold text-green-700">
+                            Coupon applied successfully!
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Available Coupons List */}
+                    {!couponValidated && eligibleCoupons.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="text-xs text-gray-600 bg-purple-50 border border-purple-200 rounded-lg p-2 flex items-center gap-2">
+                          <i className="pi pi-info-circle text-purple-600"></i>
+                          <span className="font-medium">{eligibleCoupons.length} coupon{eligibleCoupons.length > 1 ? 's' : ''} available - Click to apply</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {eligibleCoupons.map((coupon) => (
+                            <div
+                              key={coupon.value}
+                              onClick={() => handleCouponSelection(coupon.value)}
+                              className="group relative bg-gradient-to-br from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 border-2 border-purple-300 hover:border-purple-500 rounded-lg p-3 cursor-pointer transition-all shadow-sm hover:shadow-md"
+                            >
+                              <div className="flex items-center justify-between mb-1">
+                                <div className="flex items-center gap-2">
+                                  <div className="bg-purple-600 p-1.5 rounded-md">
+                                    <i className="pi pi-ticket text-white text-xs"></i>
+                                  </div>
+                                  <span className="font-bold text-purple-900 text-sm">{coupon.label}</span>
+                                </div>
+                                <i className="pi pi-arrow-right text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                              </div>
+                              <div className="text-xs text-purple-700 ml-8">
+                                Click to apply
+                              </div>
+                              {validatingCoupon && couponCode === coupon.value && (
+                                <div className="absolute inset-0 bg-purple-100 bg-opacity-80 rounded-lg flex items-center justify-center">
+                                  <i className="pi pi-spin pi-spinner text-purple-600 text-xl"></i>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-xs font-semibold text-gray-700">
                       <i className="pi pi-credit-card text-indigo-600"></i>
@@ -1351,6 +1599,13 @@ const Billing = () => {
                       <div className="text-gray-600 text-xs mb-1 font-medium">🎫 Discount</div>
                       <div className="font-bold text-xl text-red-600">-{formatCurrency(discount || 0)}</div>
                     </div>
+                    
+                    {couponValidated && couponDiscount > 0 && (
+                      <div className="bg-white rounded-lg p-4 border-l-4 border-purple-500 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="text-gray-600 text-xs mb-1 font-medium">🎟️ Coupon Discount ({couponCode})</div>
+                        <div className="font-bold text-xl text-purple-600">-{formatCurrency(couponDiscount)}</div>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-xl p-5 mt-4 shadow-lg">

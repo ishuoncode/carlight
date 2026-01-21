@@ -22,10 +22,12 @@ const ExpenseManagement = () => {
   const [expenseToDelete, setExpenseToDelete] = useState(null);
   const [outlets, setOutlets] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [viewMode, setViewMode] = useState('monthly'); // monthly or yearly
+  const [viewMode, setViewMode] = useState('monthly'); // monthly, yearly, or range
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedOutlet, setSelectedOutlet] = useState('');
+  const [fromDate, setFromDate] = useState(null);
+  const [toDate, setToDate] = useState(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -125,7 +127,19 @@ const ExpenseManagement = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/api/expenses`, {
+      let url = `${API_BASE_URL}/api/expenses`;
+      
+      // Use range API if in range mode and dates are set
+      if (viewMode === 'range' && fromDate && toDate) {
+        const from = fromDate.toISOString().split('T')[0];
+        const to = toDate.toISOString().split('T')[0];
+        url = `${API_BASE_URL}/api/expenses/range?from=${from}&to=${to}`;
+        if (selectedOutlet) {
+          url += `&outletId=${selectedOutlet}`;
+        }
+      }
+      
+      const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -337,6 +351,12 @@ const ExpenseManagement = () => {
     fetchPieData();
   }, [viewMode, selectedYear, selectedMonth, selectedOutlet]);
 
+  useEffect(() => {
+    if (viewMode === 'range') {
+      fetchExpenses();
+    }
+  }, [viewMode, fromDate, toDate, selectedOutlet]);
+
   const formatCurrency = (value) => `₹${value ? Number(value).toFixed(2) : '0.00'}`;
 
   const formatDate = (value) => {
@@ -345,6 +365,68 @@ const ExpenseManagement = () => {
     const month = date.toLocaleString('en-US', { month: 'short' });
     const year = date.getFullYear();
     return `${day} ${month} ${year}`;
+  };
+
+  const exportToExcel = () => {
+    if (expenses.length === 0) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'No data to export',
+        life: 3000
+      });
+      return;
+    }
+
+    // Prepare data for export
+    const exportData = expenses.map(expense => ({
+      ID: expense.id,
+      Title: expense.title,
+      Outlet: expense.outlet?.name || 'N/A',
+      Category: expense.category,
+      Amount: expense.amount,
+      Date: formatDate(expense.createdAt),
+      Notes: expense.notes || ''
+    }));
+
+    // Convert to CSV
+    const headers = Object.keys(exportData[0]);
+    const csvContent = [
+      headers.join(','),
+      ...exportData.map(row => 
+        headers.map(header => {
+          const value = row[header];
+          // Escape quotes and wrap in quotes if contains comma
+          if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+            return `"${value.replace(/"/g, '""')}"`;
+          }
+          return value;
+        }).join(',')
+      )
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    
+    const fileName = viewMode === 'range' && fromDate && toDate
+      ? `expenses_${fromDate.toISOString().split('T')[0]}_to_${toDate.toISOString().split('T')[0]}.csv`
+      : `expenses_${new Date().toISOString().split('T')[0]}.csv`;
+    
+    link.setAttribute('download', fileName);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.current?.show({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'Data exported successfully',
+      life: 3000
+    });
   };
 
   const allMonths = [
@@ -370,8 +452,9 @@ const ExpenseManagement = () => {
     ? allMonths.filter(month => month.value <= currentMonth)
     : allMonths;
 
-  const years = Array.from({ length: 10 }, (_, i) => {
-    const year = currentYear - 9 + i;
+  const minYear = 2025;
+  const years = Array.from({ length: currentYear - minYear + 1 }, (_, i) => {
+    const year = currentYear - i;
     return { label: year.toString(), value: year };
   });
 
@@ -402,6 +485,14 @@ const ExpenseManagement = () => {
               outlined
             />
             <Button
+              label="Export to Excel"
+              icon="pi pi-file-excel"
+              onClick={exportToExcel}
+              className="bg-green-600 hover:bg-green-700 border-0 text-white px-6 py-3"
+              tooltip="Export data to CSV"
+              tooltipOptions={{ position: 'bottom' }}
+            />
+            <Button
               label="Add Expense"
               icon="pi pi-plus"
               onClick={() => setAddDialogVisible(true)}
@@ -421,7 +512,8 @@ const ExpenseManagement = () => {
                   value={viewMode}
                   options={[
                     { label: 'Monthly', value: 'monthly' },
-                    { label: 'Yearly', value: 'yearly' }
+                    { label: 'Yearly', value: 'yearly' },
+                    { label: 'Date Range', value: 'range' }
                   ]}
                   onChange={(e) => setViewMode(e.value)}
                   className="w-full border border-gray-300"
@@ -448,6 +540,34 @@ const ExpenseManagement = () => {
                   onChange={(e) => setSelectedMonth(e.value)}
                   className="w-full border border-gray-300"
                 />
+              </div>
+            )}
+
+            {viewMode === 'range' && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                  <Calendar
+                    value={fromDate}
+                    onChange={(e) => setFromDate(e.value)}
+                    dateFormat="dd M yy"
+                    placeholder="Select start date"
+                    className="w-full border border-gray-300"
+                    showIcon
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                  <Calendar
+                    value={toDate}
+                    onChange={(e) => setToDate(e.value)}
+                    dateFormat="dd M yy"
+                    placeholder="Select end date"
+                    className="w-full border border-gray-300"
+                    showIcon
+                    minDate={fromDate}
+                  />
+                </div>
               </div>
             )}
 

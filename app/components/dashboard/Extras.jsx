@@ -10,6 +10,7 @@ import { InputNumber } from 'primereact/inputnumber';
 import { Dropdown } from 'primereact/dropdown';
 import { Card } from 'primereact/card';
 import { FilterMatchMode } from 'primereact/api';
+import { InputSwitch } from 'primereact/inputswitch';
 import toast from 'react-hot-toast';
 
 export default function Extras() {
@@ -405,73 +406,127 @@ export default function Extras() {
       <Dialog
         visible={editDialogVisible}
         onHide={() => setEditDialogVisible(false)}
+        modal
         header={
-          <div className="flex items-center gap-2">
-            <i className="pi pi-pencil text-blue-600"></i>
-            <span>Edit Extra Service</span>
+          <div className="flex items-center gap-3 pb-3">
+            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-xl shadow-md">
+              <i className="pi pi-pencil text-xl text-white"></i>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-800">Edit Extra Service</h3>
+              <p className="text-xs text-gray-500 mt-0.5">Update service details and availability</p>
+            </div>
           </div>
         }
-        modal
-        className="w-full max-w-md"
+        style={{ width: '550px', maxWidth: '95vw' }}
+        className="edit-extra-dialog"
       >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Name *
+        <div className="pt-4 space-y-4">
+          {/* Service Name */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+            <label className="flex items-center gap-2 text-xs font-bold text-gray-800 mb-2">
+              <div className="bg-blue-600 p-1.5 rounded-md">
+                <i className="pi pi-tag text-white text-xs"></i>
+              </div>
+              Service Name <span className="text-red-500">*</span>
             </label>
             <InputText
               value={editForm.name}
               onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-              placeholder="e.g., Tyre Polish"
-              className="w-full border border-gray-300"
+              placeholder="e.g., Tyre Polish, Dashboard Cleaning"
+              className="w-full border border-blue-300 text-sm font-semibold p-2 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-200"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Price (₹) *
-            </label>
-            <InputNumber
-              value={editForm.price}
-              onValueChange={(e) => setEditForm({ ...editForm, price: e.value || 0 })}
-              mode="currency"
-              currency="INR"
-              locale="en-IN"
-              placeholder="Enter price"
-              className="w-full border border-gray-300"
-              min={0}
-            />
+          {/* Price */}
+          <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="bg-green-600 p-1.5 rounded-md">
+                <i className="pi pi-indian-rupee text-white text-xs"></i>
+              </div>
+              <h4 className="text-sm font-bold text-gray-800">Service Price</h4>
+            </div>
+            
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-bold text-sm">₹</span>
+              <InputNumber
+                value={editForm.price}
+                onValueChange={(e) => setEditForm({ ...editForm, price: e.value || 0 })}
+                mode="decimal"
+                minFractionDigits={2}
+                maxFractionDigits={2}
+                placeholder="0.00"
+                className="w-full border border-gray-300"
+                inputClassName="pl-8 p-2 rounded-md text-sm font-bold focus:ring-1 focus:ring-green-500 focus:border-green-500"
+                min={0}
+              />
+            </div>
+            
+            {/* Price Preview */}
+            {editForm.price > 0 && (
+              <div className="mt-3 p-2 bg-gradient-to-r from-green-100 to-emerald-100 rounded-md border border-green-300">
+                <div className="flex items-center gap-2">
+                  <i className="pi pi-eye text-green-700 text-xs"></i>
+                  <span className="text-xs font-semibold text-green-700">Preview:</span>
+                  <span className="text-sm font-bold text-green-800">₹{editForm.price.toFixed(2)}</span>
+                </div>
+              </div>
+            )}
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Status *
-            </label>
-            <Dropdown
-              value={editForm.active}
-              options={[
-                { label: 'Active', value: true },
-                { label: 'Inactive', value: false }
-              ]}
-              onChange={(e) => setEditForm({ ...editForm, active: e.value })}
-              className="w-full border border-gray-300"
-            />
+          {/* Active/Inactive Status */}
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="bg-purple-600 p-1.5 rounded-md">
+                  <i className="pi pi-power-off text-white text-xs"></i>
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-gray-800">Service Status</h4>
+                  <p className="text-xs text-gray-600">
+                    {editForm.active ? 'Currently available' : 'Currently unavailable'}
+                  </p>
+                </div>
+              </div>
+              <InputSwitch
+                checked={editForm.active}
+                onChange={(e) => setEditForm({ ...editForm, active: e.value })}
+              />
+            </div>
+            
+            {/* Status Info */}
+            <div className={`p-2 rounded-md border text-xs ${
+              editForm.active 
+                ? 'bg-green-100 border-green-300' 
+                : 'bg-red-100 border-red-300'
+            }`}>
+              <div className="flex items-start gap-2">
+                <i className={`pi ${editForm.active ? 'pi-check-circle text-green-700' : 'pi-times-circle text-red-700'} text-sm`}></i>
+                <p className={editForm.active ? 'text-green-700' : 'text-red-700'}>
+                  {editForm.active 
+                    ? 'Available for selection during billing' 
+                    : 'Will not be shown during billing'}
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-3 border-t border-gray-200">
             <Button
               label="Cancel"
               icon="pi pi-times"
               onClick={() => setEditDialogVisible(false)}
-              className="p-button-text"
+              className="px-5 py-2 border border-gray-300 text-gray-700 hover:bg-gray-100 font-semibold rounded-md text-sm"
+              outlined
               disabled={editSubmitting}
             />
             <Button
-              label="Update Extra"
+              label="Update Service"
               icon="pi pi-check"
               onClick={handleEditSubmit}
               loading={editSubmitting}
-              className="bg-blue-600 hover:bg-blue-700 border-0 text-white px-6 py-2.5"
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 border-0 text-white px-5 py-2 font-semibold rounded-md shadow-md text-sm"
             />
           </div>
         </div>

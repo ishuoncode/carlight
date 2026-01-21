@@ -418,6 +418,14 @@ export default function YourBilling() {
                   <span className="text-gray-600">Discount:</span>
                   <span className="text-red-600 font-semibold">- {formatCurrency(selectedBill.discount || 0)}</span>
                 </div>
+                {selectedBill.couponCode && selectedBill.couponDiscount > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">
+                      Coupon Discount ({selectedBill.couponCode}):
+                    </span>
+                    <span className="text-purple-600 font-semibold">- {formatCurrency(selectedBill.couponDiscount || 0)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center pt-2 border-t border-green-200">
                   <span className="text-gray-800 font-bold text-lg">Total Amount:</span>
                   <span className="text-green-600 font-bold text-lg">{formatCurrency(selectedBill.totalAmount)}</span>

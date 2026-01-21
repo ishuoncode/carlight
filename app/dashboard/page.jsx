@@ -19,6 +19,7 @@ import ExpenseManagement from '../components/dashboard/ExpenseManagement';
 import Analytics from '../components/dashboard/Analytics';
 import YourBilling from '../components/dashboard/YourBilling';
 import CarOwner from '../components/dashboard/CarOwner';
+import CouponManagement from '../components/dashboard/CouponManagement';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -217,6 +218,13 @@ export default function Dashboard() {
       command: () => setActiveTab('expenses'),
       className: activeTab === 'expenses' ? 'bg-blue-100 border-l-4 border-blue-600' : '',
       visible: user?.role !== 'CASHIER'
+    },
+    {
+      label: 'Coupon Management',
+      icon: 'pi pi-ticket',
+      command: () => setActiveTab('coupons'),
+      className: activeTab === 'coupons' ? 'bg-blue-100 border-l-4 border-blue-600' : '',
+      visible: user?.role !== 'CASHIER'
     }
   ].filter(item => item.visible);
 
@@ -298,6 +306,8 @@ export default function Dashboard() {
         return <CarOwner />;
       case 'expenses':
         return <ExpenseManagement />;
+      case 'coupons':
+        return <CouponManagement />;
       case 'yourBilling':
         return <YourBilling />;
       default:
@@ -306,9 +316,9 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="h-screen bg-gray-100 flex flex-col overflow-hidden">
       {/* Mobile Toggle Button */}
-      <div className="lg:hidden p-4 bg-white shadow">
+      <div className="lg:hidden p-4 bg-white shadow fixed top-0 left-0 right-0 z-50">
         <Button
           icon="pi pi-bars"
           onClick={() => setVisible(true)}
@@ -331,19 +341,23 @@ export default function Dashboard() {
         />
       </Sidebar>
 
-      <div className="flex">
+      <div className="flex flex-1 overflow-hidden pt-16 lg:pt-0">
         {/* Desktop Sidebar */}
-        <div className="hidden lg:block w-64 bg-white shadow-lg min-h-screen">
-          <div className="p-4">
-            <h2 className="text-xl font-bold mb-4">Dashboard</h2>
+        <div className="hidden lg:flex lg:flex-col w-64 bg-white shadow-lg">
+          <div className="p-4 border-b">
+            <h2 className="text-xl font-bold">Dashboard</h2>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 scrollbar-hide">
             <PanelMenu model={menuItems} className="w-full" />
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 p-6">
-          <div className="bg-white rounded-lg shadow p-6 ">
-            {renderContent()}
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
+          <div className="p-6">
+            <div className="bg-white rounded-lg shadow p-6">
+              {renderContent()}
+            </div>
           </div>
         </div>
       </div>
