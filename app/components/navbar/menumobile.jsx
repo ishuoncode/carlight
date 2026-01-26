@@ -80,6 +80,14 @@ export default function MenuMobile() {
                 <>
                   <hr />
                   <p className="">
+                    <Link href="/dashboard" onClick={() => setShowMenu(!showMenu)}>
+                      <span className="font-semibold text-blue-600">
+                        {user.name || user.phoneNumber}
+                      </span>
+                    </Link>
+                  </p>{' '}
+                  <hr />
+                  <p className="">
                     <button
                       onClick={() => {
                         setShowMenu(!showMenu);

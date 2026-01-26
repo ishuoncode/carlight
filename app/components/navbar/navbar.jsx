@@ -38,9 +38,11 @@ export default function Navbar() {
       </div>
       {user ? (
         <div className="flex items-center gap-3 mr-5">
-          <span className="font-semibold hidden lg:block">
-            {user.name || user.phoneNumber}
-          </span>
+          <Link href="/dashboard">
+            <span className="font-semibold hidden lg:block cursor-pointer hover:text-blue-600 transition-colors">
+              {user.name || user.phoneNumber}
+            </span>
+          </Link>
           <button
             onClick={logout}
             className="cursor-pointer border-2 px-5 py-1 hover:bg-[#cccccc] duration-300 hidden lg:block"
