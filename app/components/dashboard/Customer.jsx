@@ -90,6 +90,16 @@ const Customer = () => {
     return `₹${value ? value.toFixed(2) : '0.00'}`;
   };
 
+  const calculateBillAmount = (bill) => {
+    if (!bill) return 0;
+
+    const packagePrice = bill.packagePrice || 0;
+    const extrasTotal = (bill.extras || []).reduce((sum, extra) => sum + (extra.price || 0), 0);
+    const additionalChargesTotal = (bill.additionalCharges || []).reduce((sum, charge) => sum + (charge.amount || 0), 0);
+
+    return packagePrice + extrasTotal + additionalChargesTotal;
+  };
+
   const formatLastVisit = (createdAt) => {
     if (!createdAt) return 'N/A';
     
@@ -274,24 +284,53 @@ const Customer = () => {
     }
     
     // Discount
-    if (billData.discount > 0) {
-      doc.setTextColor(255, 0, 0);
-      doc.text('Discount', 20, yPos);
-      doc.text(`- ${formatPDFCurrency(billData.discount)}`, pageWidth - 20, yPos, { align: 'right' });
+    if (billData.discount > 0 || billData.couponDiscount > 0) {
+      const summaryAmount = calculateBillAmount(billData);
+      const totalDiscount = (billData.discount || 0) + (billData.couponDiscount || 0);
+      const finalPaid = billData.totalAmount || summaryAmount - totalDiscount;
+
       doc.setTextColor(0, 0, 0);
       yPos += 6;
+      doc.text('Amount', 20, yPos);
+      doc.text(formatPDFCurrency(summaryAmount), pageWidth - 20, yPos, { align: 'right' });
+
+      yPos += 6;
+      if (billData.discount > 0) {
+        doc.setTextColor(255, 0, 0);
+        doc.text('Discount', 20, yPos);
+        doc.text(`- ${formatPDFCurrency(billData.discount)}`, pageWidth - 20, yPos, { align: 'right' });
+        doc.setTextColor(0, 0, 0);
+        yPos += 6;
+      }
+      if (billData.couponDiscount > 0) {
+        doc.setTextColor(255, 0, 0);
+        doc.text(`Coupon Discount (${billData.couponCode || ''})`, 20, yPos);
+        doc.text(`- ${formatPDFCurrency(billData.couponDiscount)}`, pageWidth - 20, yPos, { align: 'right' });
+        doc.setTextColor(0, 0, 0);
+        yPos += 6;
+      }
+
+      // Total line
+      yPos += 2;
+      doc.line(15, yPos, pageWidth - 15, yPos);
+      yPos += 8;
+
+      // Final Paid Amount
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.text('FINAL PAID AMOUNT', 20, yPos);
+      doc.text(formatPDFCurrency(finalPaid), pageWidth - 20, yPos, { align: 'right' });
+    } else {
+      // No discount, show total amount
+      yPos += 2;
+      doc.line(15, yPos, pageWidth - 15, yPos);
+      yPos += 8;
+
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.text('FINAL PAID AMOUNT', 20, yPos);
+      doc.text(formatPDFCurrency(billData.totalAmount || calculateBillAmount(billData)), pageWidth - 20, yPos, { align: 'right' });
     }
-    
-    // Total line
-    yPos += 2;
-    doc.line(15, yPos, pageWidth - 15, yPos);
-    yPos += 8;
-    
-    // Total Amount
-    doc.setFontSize(14);
-    doc.setFont(undefined, 'bold');
-    doc.text('TOTAL AMOUNT', 20, yPos);
-    doc.text(formatPDFCurrency(billData.totalAmount), pageWidth - 20, yPos, { align: 'right' });
     
     // Footer
     yPos += 15;
@@ -704,6 +743,10 @@ const Customer = () => {
             <div className="p-3 bg-green-50 rounded">
               <h3 className="font-bold text-gray-700 mb-2">Payment Summary</h3>
               <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Amount:</span>
+                  <span className="text-black-600 font-semibold">{formatCurrency(calculateBillAmount(selectedBill))}</span>
+                </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Discount:</span>
                   <span className="text-red-600 font-semibold">- {formatCurrency(selectedBill.discount || 0)}</span>
